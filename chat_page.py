@@ -9,10 +9,23 @@ import rag_utils
 import streamlit as st
 
 
+def _agent_namespace() -> dict:
+    """把 my_agent 的公开名字取过来（延迟导入，绕开导入顺序问题）。
+
+    拆分 app.py 时，下层模块靠 `globals().update(ctx)` 拿常量；而 ctx 只来自
+    ui_styles。ui_styles 不再顶层 import my_agent 之后，MODE_LABELS / MODELS /
+    READING_LEVELS 这类常量就必须在这里补上，否则运行到那行就 NameError。
+    """
+    import my_agent as _m
+
+    return {k: v for k, v in vars(_m).items() if not k.startswith("_")}
+
+
 def render_chat_page(state: dict) -> None:
     """渲染主聊天页面（所有副作用都通过 st.* 与 st.session_state 完成）。"""
 
-    globals().update(state)
+    globals().update(_agent_namespace())
+    globals().update(state)  # UI 层同名项优先
 
     # ---------------------------------------------------------------------------
     # 当前任务
@@ -595,47 +608,6 @@ def render_chat_page(state: dict) -> None:
             else:
                 found.append(_QueuedDoc(path))
         return found, missing
-
-
-    def _auto_level_queue(queue_names: list[str], topic: str) -> None:
-        """并发读每篇开头 ~1000 字，让模型判 S/A/B/C，结果打标签并回填单选框。"""
-        from concurrent.futures import ThreadPoolExecutor
-
-        docs, _missing = queued_docs(list(queue_names))
-        if not docs:
-            st.info(t["autolevel_empty"])
-            return
-
-        agent = get_agent("reading", False, False, lang, critical, model)
-
-        def _grade(doc: _QueuedDoc) -> tuple[str, str, str]:
-            title = Path(doc.name).stem
-            try:
-                info = extract_text(doc.getvalue(), doc.name, max_chars=2600)
-                head = (info.get("text") or "")[:2000]
-                reply = str(agent.run(build_auto_level_prompt(topic, title, head, 1000)))
-                level, reason = parse_auto_level(reply)
-            except Exception as exc:  # noqa: BLE001 - 单篇失败不影响其它
-                return doc.name, "", f"{type(exc).__name__}: {exc}"
-            return doc.name, level, reason
-
-        graded: dict[str, dict] = dict(st.session_state.get("read_levels") or {})
-        order = {"S": 0, "A": 1, "B": 2, "C": 3, "D": 4}
-        with ThreadPoolExecutor(max_workers=4) as pool:
-            for name, level, reason in pool.map(_grade, docs):
-                if level:
-                    graded[name] = {"level": level, "reason": reason}
-
-        st.session_state["read_levels"] = graded
-        if graded:
-            best = min(graded.values(), key=lambda item: order.get(item.get("level", "C"), 3))
-            top = best.get("level", "C")
-            st.session_state["read_level_target"] = top
-            st.success(
-                t["autolevel_done"].format(
-                    n=len(graded), top=READING_LEVELS.get(top, READING_LEVELS["C"])["label"] if lang == "zh" else top
-                )
-            )
 
 
     def run_reading_workbench(files, topic: str, level: str, custom: str, focus: str = "content") -> None:

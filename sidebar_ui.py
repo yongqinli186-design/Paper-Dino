@@ -6,6 +6,8 @@
 import html
 
 import chart_engine as charts
+from auth_utils import _auth_clear_store  # 退出登录时清本地凭据
+from my_agent import DEFAULT_MODEL, MODELS, MODE_LABELS  # noqa: F401  (供模式/模型下拉框)
 import streamlit as st
 from sound_engine import (  # noqa: F401  (BGM_TRACKS 供下拉框使用)
     BGM_TRACKS,
@@ -15,10 +17,68 @@ from sound_engine import (  # noqa: F401  (BGM_TRACKS 供下拉框使用)
 )
 
 
+def _agent_namespace() -> dict:
+    """把 my_agent 的公开名字取过来（延迟导入，绕开导入顺序问题）。
+
+    拆分 app.py 时，下层模块靠 `globals().update(ctx)` 拿常量；而 ctx 只来自
+    ui_styles。ui_styles 不再顶层 import my_agent 之后，MODE_LABELS / MODELS /
+    READING_LEVELS 这类常量就必须在这里补上，否则运行到那行就 NameError。
+    """
+    import my_agent as _m
+
+    return {k: v for k, v in vars(_m).items() if not k.startswith("_")}
+
+
+def _auto_level_queue(queue_names: list[str], topic: str, t: dict, lang: str, critical: bool, model: str) -> None:
+    """逐篇读开头 ~2000 字，让模型按课题判 S/A/B/C，结果写进 read_levels 并回填级别。"""
+    from concurrent.futures import ThreadPoolExecutor
+
+    paths = dict(st.session_state.get("read_queue_paths") or {})
+    docs: list[tuple[str, Path]] = []
+    for name in queue_names:
+        raw = paths.get(name)
+        path = Path(raw) if raw else None
+        if path is None or not path.exists():
+            continue
+        docs.append((name, path))
+    if not docs:
+        st.info(t["autolevel_empty"])
+        return
+
+    agent = get_agent("reading", False, False, lang, critical, model)
+
+    def _grade(item: tuple[str, Path]) -> tuple[str, str, str]:
+        name, path = item
+        try:
+            info = extract_text(path.read_bytes(), path.name, max_chars=2600)
+            head = (info.get("text") or "")[:2000]
+            reply = str(agent.run(build_auto_level_prompt(topic, Path(name).stem, head, 1000)))
+            level, reason = parse_auto_level(reply)
+        except Exception as exc:  # noqa: BLE001 - 单篇失败不影响其它
+            return name, "", f"{type(exc).__name__}: {exc}"
+        return name, level, reason
+
+    graded: dict[str, dict] = dict(st.session_state.get("read_levels") or {})
+    order = {"S": 0, "A": 1, "B": 2, "C": 3, "D": 4}
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        for name, level, reason in pool.map(_grade, docs):
+            if level:
+                graded[name] = {"level": level, "reason": reason}
+
+    st.session_state["read_levels"] = graded
+    if graded:
+        best = min(graded.values(), key=lambda it: order.get(it.get("level", "C"), 3))
+        top = best.get("level", "C")
+        st.session_state["read_level_target"] = top
+        label = READING_LEVELS.get(top, READING_LEVELS["C"])["label"]
+        st.success(t["autolevel_done"].format(n=len(graded), top=label if lang == "zh" else top))
+
+
 def render_sidebar(ctx: dict) -> dict:
     """渲染抽屉与右下角静音球，返回本轮生效的设置（lang / t / mode / pdf / style / sound…）。"""
 
-    globals().update(ctx)
+    globals().update(_agent_namespace())
+    globals().update(ctx)  # UI 层同名项优先
 
     # ---------------------------------------------------------------------------
 
@@ -517,7 +577,7 @@ def render_sidebar(ctx: dict) -> dict:
                 if len(queue_names) >= 2:
                     if st.button(t["autolevel_btn"], key="read_autolevel", type="secondary", use_container_width=True):
                         with st.spinner("🤖 正在逐篇读开头、按课题判级…"):
-                            _auto_level_queue(queue_names, reading_topic)
+                            _auto_level_queue(queue_names, reading_topic, t, lang, critical, model)
                         st.rerun()
                 if st.button(t["queue_clear"], key="read_queue_clear", type="tertiary"):
                     st.session_state["read_queue"] = []
