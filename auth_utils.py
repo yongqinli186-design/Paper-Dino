@@ -23,23 +23,37 @@ PROVIDERS: dict[str, dict] = {
         "label": "DeepSeek",
         "placeholder": "sk-...",
         "help": "在 platform.deepseek.com 的 API keys 页面创建，形如 sk-xxxxxxxx。",
+        "base_url": "https://api.deepseek.com/v1",
+        "model": "deepseek-chat",
     },
     "openai": {
         "label": "OpenAI",
         "placeholder": "sk-proj-...",
         "help": "在 platform.openai.com/api-keys 创建，通常以 sk-proj- 开头。",
+        "base_url": "https://api.openai.com/v1",
+        "model": "gpt-4o-mini",
     },
     "anthropic": {
         "label": "Anthropic (Claude)",
         "placeholder": "sk-ant-...",
         "help": "在 console.anthropic.com 创建，形如 sk-ant-xxxx。",
+        "base_url": "",  # 留空 = 用 SDK 官方默认端点
+        "model": "claude-3-5-sonnet-latest",
     },
     "custom": {
         "label": "自定义 (OpenAI 兼容)",
         "placeholder": "任意 Key（本地 Ollama 可填 ollama）",
         "help": "中转 API / vLLM / Ollama / LM Studio 等，只要能走 OpenAI 兼容接口即可。",
+        "base_url": "",
+        "model": "",
     },
 }
+
+# 兜底：任何情况下都退回 DeepSeek 官方地址与模型，绝不让页面因为缺配置崩溃
+FALLBACK_PROVIDER = "deepseek"
+FALLBACK_BASE_URL = "https://api.deepseek.com/v1"
+FALLBACK_MODEL = "deepseek-chat"
+
 PROVIDER_LABELS = [spec["label"] for spec in PROVIDERS.values()]
 LABEL_TO_KEY = {spec["label"]: key for key, spec in PROVIDERS.items()}
 
@@ -91,12 +105,41 @@ def _system_provider() -> str:
     return provider if provider in PROVIDERS else "deepseek"
 
 
+def _provider_spec(provider: str | None = None) -> dict:
+    """取某个提供商的配置；未知 provider 或结构缺字段时都退回默认值。"""
+    name = provider or _system_provider()
+    spec = PROVIDERS.get(name)
+    if not isinstance(spec, dict):
+        spec = PROVIDERS.get(FALLBACK_PROVIDER, {})
+    return spec if isinstance(spec, dict) else {}
+
+
 def _system_base_url() -> str:
-    return _secret("SYSTEM_BASE_URL") or PROVIDERS[_system_provider()]["base_url"]
+    """系统 Base URL：优先读配置，读不到就回退官方地址（永不上抛 KeyError）。"""
+    try:
+        explicit = _secret("SYSTEM_BASE_URL")
+    except Exception:  # noqa: BLE001 - 配置写坏了也不能崩
+        explicit = ""
+    if explicit:
+        return explicit
+    try:
+        return str(_provider_spec().get("base_url") or FALLBACK_BASE_URL).strip() or FALLBACK_BASE_URL
+    except Exception:  # noqa: BLE001
+        return FALLBACK_BASE_URL
 
 
 def _system_model() -> str:
-    return _secret("SYSTEM_MODEL") or PROVIDERS[_system_provider()]["model"]
+    """系统模型名：同上，取不到就给 DeepSeek 默认模型。"""
+    try:
+        explicit = _secret("SYSTEM_MODEL")
+    except Exception:  # noqa: BLE001
+        explicit = ""
+    if explicit:
+        return explicit
+    try:
+        return str(_provider_spec().get("model") or FALLBACK_MODEL).strip() or FALLBACK_MODEL
+    except Exception:  # noqa: BLE001
+        return FALLBACK_MODEL
 
 
 def _auth_read_store() -> dict:
@@ -198,7 +241,7 @@ def _render_auth_gate() -> None:
             help="选好后，下面输入框的提示与校验会跟着变。",
         )
         provider_in = LABEL_TO_KEY.get(label_in, "deepseek")
-        spec = PROVIDERS[provider_in]
+        spec = _provider_spec(provider_in)
         st.text_input(
             "API Key（只存在你自己的浏览器会话里）",
             type="password",
