@@ -44,18 +44,13 @@ PIXEL_CSS_TEMPLATE = r"""
   color: var(--fg) !important;
 }
 
-@keyframes ambientFlow {
-  0%   { transform: translate3d(-2.2%, -1.4%, 0) scale(1.08); }
-  50%  { transform: translate3d(1.6%, 1.8%, 0) scale(1.12); }
-  100% { transform: translate3d(2.4%, -0.8%, 0) scale(1.08); }
-}
 [data-testid="stAppViewContainer"],
 [data-testid="stMain"],
 [data-testid="stHeader"],
 header[data-testid="stHeader"] {
   background: transparent !important;
 }
-[data-testid="stHeader"] { backdrop-filter: none !important; }
+[data-testid="stHeader"] {  }
 [data-testid="stAppDeployButton"], [data-testid="stToolbar"] { display: none !important; }
 
 .pixel-layer {
@@ -63,9 +58,9 @@ header[data-testid="stHeader"] {
   background: linear-gradient(120deg, #dbffea 0%, #d3f4ff 26%, #c8fbe4 52%, #cde9ff 76%, #e8fff1 100%);
   transform: translate3d(0, 0, 0) scale(1.08);
   transform-origin: 50% 50%;
-  will-change: transform;
+  
   backface-visibility: hidden;
-  animation: ambientFlow 38s ease-in-out infinite alternate;
+  
 }
 .pixel-layer::before {
   content: ""; position: absolute; inset: 0;
@@ -84,18 +79,14 @@ header[data-testid="stHeader"] {
   position: absolute; width: 6px; height: 6px; background: var(--lime);
   box-shadow: -6px 0 0 var(--lime), 6px 0 0 var(--lime), 0 -6px 0 var(--lime), 0 6px 0 var(--lime),
               0 0 0 2px rgba(12, 42, 28, .55);
-  animation: twinkle 6.4s steps(2, end) infinite;
+  
 }
-.star.s1 { left: 8%;  top: 16%; animation-delay: .2s; }
-.star.s2 { left: 22%; top: 64%; animation-delay: 1.1s; transform: scale(.7); }
-.star.s3 { left: 47%; top: 9%;  animation-delay: 1.8s; transform: scale(.55); }
-.star.s4 { left: 63%; top: 78%; animation-delay: .6s; }
-.star.s5 { left: 86%; top: 24%; animation-delay: 2.3s; transform: scale(.8); }
-.star.s6 { left: 92%; top: 66%; animation-delay: 1.4s; transform: scale(.6); }
-@keyframes twinkle {
-  0%, 100% { opacity: .15; transform: translateY(0) scale(.85); }
-  50%      { opacity: .95; transform: translateY(-4px) scale(1); }
-}
+.star.s1 { left: 8%;  top: 16%;  }
+.star.s2 { left: 22%; top: 64%;  transform: scale(.7); }
+.star.s3 { left: 47%; top: 9%;   transform: scale(.55); }
+.star.s4 { left: 63%; top: 78%;  }
+.star.s5 { left: 86%; top: 24%;  transform: scale(.8); }
+.star.s6 { left: 92%; top: 66%;  transform: scale(.6); }
 
 /* ================= 布局 ================= */
 [data-testid="stMainBlockContainer"], .block-container {
@@ -226,13 +217,7 @@ button[data-testid="stBaseButton-headerNoPadding"]:hover { background: var(--min
   outline: none !important;
   box-shadow: inset 3px 3px 0 rgba(12, 42, 28, .10),
               0 0 0 3px var(--cyan), 0 0 0 7px rgba(95, 227, 255, .32) !important;
-  animation: focusStep 2.4s ease-in-out infinite !important;
-}
-@keyframes focusStep {
-  50% {
-    box-shadow: inset 3px 3px 0 rgba(12, 42, 28, .10),
-                0 0 0 4px var(--lime), 0 0 0 9px rgba(141, 255, 178, .28);
-  }
+  
 }
 
 /* 聊天输入框：外框像素化，内部 textarea 透明 */
@@ -382,12 +367,7 @@ button[data-testid="stBaseButton-headerNoPadding"]:hover { background: var(--min
   background: var(--lime);
   box-shadow: 4px 0 0 var(--lime), 0 4px 0 var(--lime), 4px 4px 0 var(--lime),
               0 0 0 2px var(--edge);
-  animation: spinnerRoll 1.6s steps(4, end) infinite;
-}
-@keyframes spinnerRoll {
-  0%   { transform: translate(0, 0) scale(1); }
-  50%  { transform: translate(4px, -4px) scale(.9); }
-  100% { transform: translate(0, -8px) scale(1); }
+  
 }
 [data-testid="stAlert"], [data-testid="stAlertContainer"] {
   border: 3px solid var(--edge) !important;
@@ -414,7 +394,7 @@ code { font-family: "VT323", Consolas, monospace !important; font-size: 1.02rem 
   margin: 12px 0 !important;
   box-shadow: 5px 5px 0 var(--shadow) !important;
   position: relative;
-  animation: rpgPop .46s cubic-bezier(.2, 1.5, .4, 1) both;
+  
   transform-origin: 24px 100%;
 }
 [data-testid="stChatMessage"]::after {
@@ -424,12 +404,6 @@ code { font-family: "VT323", Consolas, monospace !important; font-size: 1.02rem 
   border-right: 3px solid var(--edge);
   border-bottom: 3px solid var(--edge);
   transform: rotate(45deg);
-}
-@keyframes rpgPop {
-  0%   { transform: scale(.25) translateY(26px); opacity: 0; }
-  55%  { transform: scale(1.06) translateY(-6px); opacity: 1; }
-  78%  { transform: scale(.97) translateY(1px); }
-  100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 [data-testid="stChatMessage"] [data-testid^="stChatMessageAvatar"] {
   border-radius: 0 !important;
@@ -481,12 +455,8 @@ code { font-family: "VT323", Consolas, monospace !important; font-size: 1.02rem 
 }
 .hero > * { position: relative; z-index: 1; }
 .hero-dino svg {
-  animation: dinoFloat 3.2s steps(2, end) infinite;
+  
   filter: drop-shadow(3px 3px 0 rgba(12, 42, 28, .55));
-}
-@keyframes dinoFloat {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-5px); }
 }
 .hero-kicker {
   font-family: var(--font-px);
@@ -503,9 +473,8 @@ code { font-family: "VT323", Consolas, monospace !important; font-size: 1.02rem 
   -webkit-background-clip: text; background-clip: text;
   color: transparent;
   filter: drop-shadow(3px 3px 0 rgba(12, 42, 28, .9));
-  animation: titleFlow 16s linear infinite;
+  
 }
-@keyframes titleFlow { to { background-position: 220% 0; } }
 .hero-sub {
   font-family: var(--font-body);
   font-size: 1.14rem; line-height: 1.45;
@@ -534,9 +503,8 @@ code { font-family: "VT323", Consolas, monospace !important; font-size: 1.02rem 
 .task-pill .pulse {
   width: 9px; height: 9px; background: var(--lime);
   box-shadow: 0 0 0 2px var(--edge);
-  animation: pillBlink 3s steps(1, end) infinite;
+  
 }
-@keyframes pillBlink { 50% { opacity: .15; } }
 
 .hint-card {
   display: flex; gap: .8rem; align-items: flex-start;
@@ -561,15 +529,8 @@ code { font-family: "VT323", Consolas, monospace !important; font-size: 1.02rem 
   font-family: var(--font-px); font-size: .62rem; line-height: 1.8;
   color: var(--fg);
 }
-.dino-loader svg { animation: dino-hop 2.2s steps(2, end) infinite; }
-@keyframes dino-hop { 0% { transform: translateY(0); } 100% { transform: translateY(-5px); } }
-.dino-loader .dots::after { content: ""; animation: dino-dots 2.2s steps(4, end) infinite; }
-@keyframes dino-dots {
-  0%   { content: ""; }
-  25%  { content: "."; }
-  50%  { content: ".."; }
-  75%, 100% { content: "..."; }
-}
+.dino-loader svg {  }
+.dino-loader .dots::after { content: "";  }
 
 /* ================= 状态栏 ================= */
 [data-testid="stBottomBlockContainer"]::after {
@@ -585,8 +546,7 @@ code { font-family: "VT323", Consolas, monospace !important; font-size: 1.02rem 
   letter-spacing: .02em;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.status-bar .sb-caret { animation: caretBlink 2.4s steps(1, end) infinite; color: var(--teal); }
-@keyframes caretBlink { 50% { opacity: 0; } }
+.status-bar .sb-caret {  color: var(--teal); }
 .status-bar .sb-right { margin-left: auto; color: var(--fg-soft); }
 
 /* ================= 右下角小宠物 ================= */
@@ -594,10 +554,10 @@ code { font-family: "VT323", Consolas, monospace !important; font-size: 1.02rem 
   position: fixed; bottom: 150px; left: 372px; z-index: 1200;
   display: flex; align-items: flex-end; gap: 6px;
   pointer-events: none;
-  animation: petWalk 42s linear infinite;
+  
 }
 .pet-body svg {
-  animation: petBob 2.6s steps(2, end) infinite;
+  
   filter: drop-shadow(2px 2px 0 rgba(12, 42, 28, .5));
 }
 .pet-tag {
@@ -607,12 +567,6 @@ code { font-family: "VT323", Consolas, monospace !important; font-size: 1.02rem 
   box-shadow: 2px 2px 0 rgba(12, 42, 28, .6);
   color: var(--teal);
 }
-@keyframes petWalk {
-  0%   { transform: translateX(0) scale(.8); opacity: .95; }
-  50%  { transform: translateX(calc(50vw - 240px)) scale(.8); opacity: .95; }
-  100% { transform: translateX(calc(100vw - 500px)) scale(.8); opacity: .95; }
-}
-@keyframes petBob { 50% { transform: translateY(-3px); } }
 
 /* ================= 页脚 ================= */
 .app-footer {
@@ -659,7 +613,7 @@ hr { border: 0; border-top: 3px dashed rgba(12, 42, 28, .35) !important; }
 @media (prefers-reduced-motion: reduce) {
   .stApp, .star, .hero-dino svg, .hero-title, .pet, .pet-body svg,
   .dino-loader svg, .task-pill .pulse, [data-testid="stChatMessage"] {
-    animation: none !important;
+    
   }
 }
 /* 深色模式下保持对比度（Streamlit 若被切到 dark 主题） */
@@ -681,8 +635,8 @@ div[class~="st-key-drawer"]{
   position:fixed;top:0;left:0;bottom:0;width:392px;max-width:90vw;
   padding:26px 18px 210px;overflow-y:auto;z-index:1250;
   background:rgba(245,255,249,.86);
-  -webkit-backdrop-filter:blur(18px) saturate(1.12);
-  backdrop-filter:blur(18px) saturate(1.12);
+  
+  
   border-right:3px solid var(--edge);
   box-shadow:9px 0 0 rgba(12,42,28,.16);
   transition:transform .42s cubic-bezier(.22,1,.36,1);
@@ -708,7 +662,7 @@ div[class~="st-key-drawer"] [data-testid="stExpander"] summary{font-family:var(-
   position:relative;
   transform:translateZ(0);
   transition:transform .24s ease;
-  will-change:transform;
+  
 }
 [data-testid="stChatInput"] > div:first-child:focus-within{
   transform:translateZ(0) scale(1.02);
@@ -721,12 +675,8 @@ div[class~="st-key-drawer"] [data-testid="stExpander"] summary{font-family:var(-
   pointer-events:none;
   transform:translateZ(0) scale(1);
   opacity:.18;
-  will-change:transform, opacity;
-  animation:capsuleGlow 3.4s ease-in-out infinite;
-}
-@keyframes capsuleGlow{
-  0%,100%{transform:translateZ(0) scale(1);opacity:.14;}
-  50%    {transform:translateZ(0) scale(1.035);opacity:.55;}
+  
+  
 }
 [data-testid="stChatInputTextArea"]{
   border-radius:999px !important;border:0 !important;background:transparent !important;
@@ -744,7 +694,7 @@ div[class~="st-key-drawer"] [data-testid="stExpander"] summary{font-family:var(-
 }
 .hero-min .hero-dino{
   flex:0 0 auto;filter:drop-shadow(4px 4px 0 rgba(12,42,28,.22));
-  animation:dinoFloat 4.4s ease-in-out infinite;
+  
 }
 .hero-min-text{min-width:0;}
 .hero-min .hero-kicker{
@@ -886,7 +836,7 @@ div[class~="st-key-mute_ball"]{
   width:auto;background:rgba(245,255,249,.92);
   border:3px solid var(--edge);padding:7px 12px 7px 10px;
   box-shadow:4px 4px 0 rgba(12,42,28,.75);
-  backdrop-filter:blur(6px);
+  
 }
 div[class~="st-key-mute_ball"] label p{
   font-family:var(--font-px) !important;font-size:.52rem !important;
@@ -928,7 +878,7 @@ div[class~="st-key-msg_actions"], div[class~="st-key-quick_actions"] {
 }
 
 .hero-dino, .dino-loader svg, .pet, .pet-body, .pixel-layer {
-  will-change: transform, opacity;
+  
   transform: translateZ(0);
   backface-visibility: hidden;
 }
@@ -944,10 +894,10 @@ div[class~="st-key-msg_actions"], div[class~="st-key-quick_actions"] {
   backface-visibility: hidden;
 }
 
-div[class~="st-key-drawer"] { will-change: transform; }
+div[class~="st-key-drawer"] {  }
 
 @media (prefers-reduced-motion: reduce) {
-  .pixel-layer::after { animation: none !important; }
+  .pixel-layer::after {  }
 }
 
 @media (max-width: 900px) {
@@ -958,181 +908,54 @@ div[class~="st-key-drawer"] { will-change: transform; }
 .star, .hero-title, .task-pill, .task-pill .pulse, .status-bar,
 .dino-loader, .dino-loader svg, .pet, .pet-body, .pixel-layer {
   transform: translateZ(0);
-  will-change: transform, opacity;
+  
   backface-visibility: hidden;
 }
 [data-testid="stChatMessage"] {
   transform: translateZ(0);
-  will-change: transform;
+  
 }
+
+/* ============ 通行证（鉴权页） ============ */
+.auth-card {
+  max-width: 620px; margin: 6vh auto 1.4rem; padding: 1.5rem 1.6rem;
+  border: 4px solid var(--edge);
+  background: rgba(244, 255, 248, .92);
+  box-shadow: 8px 8px 0 rgba(12, 42, 28, .22);
+  contain: paint; transform: translateZ(0);
+}
+.auth-kicker {
+  font-family: var(--font-px); font-size: .52rem; letter-spacing: .28em;
+  color: #2f6d46; margin-bottom: .5rem;
+}
+.auth-title {
+  font-family: var(--font-px); font-size: 1.12rem; line-height: 1.7;
+  margin: 0 0 .5rem; color: #10341f !important; letter-spacing: .04em;
+}
+.auth-sub {
+  font-family: var(--font-body); font-size: 1.06rem; line-height: 1.7;
+  color: #2c5340 !important; margin: 0;
+}
+div[class*="st-key-gate_key"] input,
+div[class*="st-key-gate_code"] input {
+  font-family: var(--font-body); font-size: 1.05rem;
+  border: 3px solid var(--edge) !important; border-radius: 0 !important;
+  background: #f2fff7 !important;
+}
+div[class*="st-key-gate_submit"] button { min-height: 48px; }
+div[class*="st-key-logout_btn"] button { border-color: #7a2f2f !important; color: #7a2f2f !important; }
+
+
+
 </style>
 """
 
 PIXEL_CSS = PIXEL_CSS_TEMPLATE.replace("__PSP__", FONT_PSP_B64).replace("__VT__", FONT_VT323_B64)
 
 
-CLICK_JS = r"""
-<script>
-(function () {
-  try {
-    var doc = window.parent.document;
-    if (doc.__pxClickReady) { return; }
-    doc.__pxClickReady = true;
-
-    var style = doc.createElement("style");
-    style.textContent = [
-      "@keyframes pxStarPop{0%{transform:scale(.35) translateY(0) rotate(0deg);opacity:1}",
-      "55%{transform:scale(1) translateY(-18px) rotate(12deg);opacity:1}",
-      "100%{transform:scale(.9) translateY(-44px) rotate(28deg);opacity:0}}",
-      ".px-click{position:fixed;z-index:99999;pointer-events:none;width:6px;height:6px;",
-      "will-change:transform,opacity;transform:translateZ(0);contain:layout paint;",
-      "animation:pxStarPop .85s steps(5,end) forwards}",
-      ".px-click i{position:absolute;width:6px;height:6px;background:currentColor;",
-      "box-shadow:0 0 0 1px rgba(12,42,28,.55)}",
-      ".px-click i:nth-child(1){left:-6px;top:0}",
-      ".px-click i:nth-child(2){left:6px;top:0}",
-      ".px-click i:nth-child(3){left:0;top:-6px}",
-      ".px-click i:nth-child(4){left:0;top:6px}",
-      ".px-click i:nth-child(5){left:-6px;top:-6px}",
-      ".px-click i:nth-child(6){left:6px;top:6px}"
-    ].join("");
-    doc.head.appendChild(style);
-
-    var palette = ["#8dffb2", "#5fe3ff", "#c8ff7a", "#7dffe0"];
-
-    function spawn(x, y) {
-      window.requestAnimationFrame(function () {
-        var s = doc.createElement("div");
-        s.className = "px-click";
-        s.style.left = x + "px";
-        s.style.top = y + "px";
-        s.style.color = palette[Math.floor(Math.random() * palette.length)];
-        for (var k = 0; k < 6; k++) { s.appendChild(doc.createElement("i")); }
-        doc.body.appendChild(s);
-        s.addEventListener("animationend", function () {
-          if (s.parentNode) { s.remove(); }
-        }, { once: true });
-        window.setTimeout(function () { if (s.parentNode) { s.remove(); } }, 900);
-      });
-    }
-
-    doc.addEventListener("click", function (ev) {
-      var t = ev.target;
-      if (t && t.closest && t.closest(
-        "button, a, input, textarea, select, label, summary, [role='button'], [role='switch'], [role='radio']"
-      )) { return; }
-      spawn(ev.clientX, ev.clientY);
-    }, true);
-  } catch (err) {
-    console.warn("pixel click effect unavailable:", err);
-  }
-})();
-</script>
-"""
+CLICK_JS = ""  # 已停用：按“删除所有 animation/@keyframes”的要求关闭点击像素星特效
 
 
-IRIS_JS = r"""
-<script>
-(function () {
-  var P = window.parent || window;
-  var D = P.document;
-  try {
-    if (D.__irisReady) { return; }
-    D.__irisReady = true;
 
-    var style = D.createElement("style");
-    style.id = "iris-style";
-    style.textContent = [
-      "#iris-layer{position:fixed;inset:0;z-index:2147483000;pointer-events:none;overflow:hidden;display:none;",
-      "transition:opacity .42s ease;opacity:1}",
-      "#iris-layer.on{display:block}",
-      "#iris-dot{position:absolute;border-radius:50%;",
-      "background:radial-gradient(circle at 50% 45%, #c8ffd8 0%, #6ef2a4 26%, #35dd85 52%, #0f5132 100%);",
-      "box-shadow:0 0 120px rgba(61,220,132,.9),0 0 40px rgba(200,255,216,.7) inset;",
-      "transform:translate(-50%,-50%) scale(0);",
-      "animation:irisGrow .86s cubic-bezier(.22,1,.36,1) forwards}",
-      "@keyframes irisGrow{",
-      "0%{transform:translate(-50%,-50%) scale(0);opacity:.98}",
-      "62%{opacity:1}",
-      "100%{transform:translate(-50%,-50%) scale(1);opacity:1}}",
-      ".iris-dim{opacity:.06 !important;transition:opacity .62s ease !important}",
-      ".iris-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);",
-      "font-family:'VT323',monospace;font-size:1.6rem;letter-spacing:.22em;color:#7dffc0;",
-      "opacity:0;animation:irisHint 1.1s ease forwards .34s}",
-      "@keyframes irisHint{0%{opacity:0}40%{opacity:.9}100%{opacity:0}}"
-    ].join("");
-    D.head.appendChild(style);
+IRIS_JS = ""  # 已停用：光圈扩散转场依赖 @keyframes，随动画一起移除
 
-    function play(x, y, btn) {
-      var W = D.documentElement.clientWidth || P.innerWidth;
-      var H = D.documentElement.clientHeight || P.innerHeight;
-      var dx = Math.max(x, W - x);
-      var dy = Math.max(y, H - y);
-      var size = 2 * Math.sqrt(dx * dx + dy * dy);
-
-      var layer = D.getElementById("iris-layer");
-      if (!layer) {
-        layer = D.createElement("div");
-        layer.id = "iris-layer";
-        layer.innerHTML = '<div id="iris-dot"></div><div class="iris-hint">ENTERING THE FOREST</div>';
-        D.body.appendChild(layer);
-      }
-      var dot = D.getElementById("iris-dot");
-      dot.style.width = size + "px";
-      dot.style.height = size + "px";
-      dot.style.left = x + "px";
-      dot.style.top = y + "px";
-      layer.classList.add("on");
-
-      var app = D.querySelector('[data-testid="stAppViewContainer"]') || D.querySelector(".stApp");
-      if (app) { app.classList.add("iris-dim"); }
-
-      // 1) 绿屏铺满后先解除主页的变暗，再切页
-      window.setTimeout(function () {
-        if (app) { app.classList.remove("iris-dim"); app.style.opacity = ""; }
-      }, 640);
-
-      // 2) 放行第二次点击，让 Streamlit 真正切页
-      window.setTimeout(function () {
-        try {
-          P.__irisPass = true;
-          if (btn && btn.click) { btn.click(); }
-        } catch (e) { /* 放行失败也不影响用户手动再点一次 */ }
-      }, 760);
-
-      // 3) 新页面淡入完成后，悄悄把绿色幕布收走，避免它一直盖在上面
-      window.setTimeout(function () {
-        var l = D.getElementById("iris-layer");
-        if (l) { l.style.opacity = "0"; }
-      }, 1250);
-      window.setTimeout(function () {
-        var l = D.getElementById("iris-layer");
-        if (l) { l.classList.remove("on"); l.style.opacity = "1"; }
-        var a2 = D.querySelector('[data-testid="stAppViewContainer"]') || D.querySelector(".stApp");
-        if (a2) { a2.classList.remove("iris-dim"); a2.style.opacity = ""; }
-      }, 1750);
-    }
-
-    function bind() {
-      var btn = D.querySelector('div[class*="st-key-guide_entry"] button');
-      if (!btn || btn.__irisBound) { return !!btn; }
-      btn.__irisBound = true;
-      btn.addEventListener("click", function (ev) {
-        if (P.__irisPass) { P.__irisPass = false; return; }
-        ev.preventDefault();
-        ev.stopPropagation();
-        if (ev.stopImmediatePropagation) { ev.stopImmediatePropagation(); }
-        play(ev.clientX || (P.innerWidth / 2), ev.clientY || (P.innerHeight / 2), btn);
-      }, true);
-      return true;
-    }
-
-    var tries = 0;
-    var timer = window.setInterval(function () {
-      tries += 1;
-      if (bind() || tries > 40) { window.clearInterval(timer); }
-    }, 400);
-  } catch (e) { /* 静默失败：按钮本身依旧可用 */ }
-})();
-</script>
-"""

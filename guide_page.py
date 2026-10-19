@@ -61,17 +61,12 @@ html body::before {
   pointer-events: none;
   background: linear-gradient(150deg, #04140c 0%, #0a2c1a 24%, #07211a 48%, #0b3324 72%, #04150e 100%);
   transform: translate3d(0, 0, 0) scale(1.08);
-  will-change: transform;
+  
   contain: strict;
   backface-visibility: hidden;
-  animation: forestFlow 42s ease-in-out infinite alternate;
+  
 }
 html body { background: #04150e !important; }
-@keyframes forestFlow {
-  0%   { transform: translate3d(-3%, -2%, 0) scale(1.06); }
-  50%  { transform: translate3d(2%, 3%, 0) scale(1.12); }
-  100% { transform: translate3d(3%, -1%, 0) scale(1.06); }
-}
 [data-testid="stAppViewContainer"], [data-testid="stMain"] { background: transparent !important; }
 
 /* ---------- 星星 / 萤火 ---------- */
@@ -79,11 +74,10 @@ html body { background: #04150e !important; }
 .forest-layer .fog {
   position: absolute; width: 42vw; height: 42vw; border-radius: 50%;
   background: radial-gradient(circle, rgba(60, 200, 130, .16), transparent 68%);
-  filter: blur(30px);
+  
 }
-.forest-layer .fog.f1 { left: -8vw; top: 4vh; animation: fogDrift 26s ease-in-out infinite; }
-.forest-layer .fog.f2 { right: -10vw; top: 22vh; animation: fogDrift 31s ease-in-out infinite reverse; }
-@keyframes fogDrift { 50% { transform: translate(4vw, 4vh) scale(1.1); } }
+.forest-layer .fog.f1 { left: -8vw; top: 4vh;  }
+.forest-layer .fog.f2 { right: -10vw; top: 22vh;  }
 
 /* ---------- 底部像素树林 + 草地 ---------- */
 .forest-ground {
@@ -130,21 +124,15 @@ html body { background: #04150e !important; }
   background: #3ddc84;
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
   opacity: .75;
-  animation: leafFall linear infinite;
+  
 }
-.leaf.l1 { left: 8%;  animation-duration: 13s; animation-delay: 0s;   background: #57ff9f; }
-.leaf.l2 { left: 22%; animation-duration: 17s; animation-delay: 2.5s; background: #2fbf72; }
-.leaf.l3 { left: 37%; animation-duration: 11s; animation-delay: 1.2s; background: #8dffb2; }
-.leaf.l4 { left: 52%; animation-duration: 19s; animation-delay: 4s;   background: #3ddc84; }
-.leaf.l5 { left: 68%; animation-duration: 15s; animation-delay: 3.1s; background: #26a86a; }
-.leaf.l6 { left: 81%; animation-duration: 12s; animation-delay: .8s;  background: #8dffb2; }
-.leaf.l7 { left: 93%; animation-duration: 18s; animation-delay: 5.4s; background: #57ff9f; }
-@keyframes leafFall {
-  0%   { transform: translateY(-60px) rotate(0deg);     opacity: 0; }
-  10%  { opacity: .8; }
-  50%  { transform: translateY(52vh) translateX(38px) rotate(180deg); }
-  100% { transform: translateY(105vh) translateX(-24px) rotate(360deg); opacity: 0; }
-}
+.leaf.l1 { left: 8%;      background: #57ff9f; }
+.leaf.l2 { left: 22%;   background: #2fbf72; }
+.leaf.l3 { left: 37%;   background: #8dffb2; }
+.leaf.l4 { left: 52%;     background: #3ddc84; }
+.leaf.l5 { left: 68%;   background: #26a86a; }
+.leaf.l6 { left: 81%;    background: #8dffb2; }
+.leaf.l7 { left: 93%;   background: #57ff9f; }
 
 /* ---------- 内容层 ---------- */
 [data-testid="stMainBlockContainer"], .block-container {
@@ -272,8 +260,7 @@ button[data-testid="stBaseButton-primary"]:hover { background: #b6ffd4 !importan
   font-size: .62rem; letter-spacing: .12em; color: #8dffb2; margin-bottom: .4rem;
 }
 .g-dino { position: fixed; right: 22px; bottom: 78px; z-index: 1; opacity: .9; pointer-events: none;
-  animation: gDinoBob 3.4s steps(2, end) infinite; }
-@keyframes gDinoBob { 50% { transform: translateY(-6px); } }
+   }
 
 @media (max-width: 760px) {
   .forest-ground .tree.t3, .forest-ground .tree.t6 { display: none; }
@@ -281,12 +268,7 @@ button[data-testid="stBaseButton-primary"]:hover { background: #b6ffd4 !importan
   .g-title { font-size: 1.4rem; }
 }
 [data-testid="stMainBlockContainer"], .block-container{
-  animation: guideReveal .72s cubic-bezier(.2,.9,.2,1) both;
-}
-@keyframes guideReveal{
-  0%{opacity:0;transform:scale(.975) translateY(14px);filter:brightness(1.25) saturate(.8);}
-  60%{opacity:1;filter:brightness(1.02);}
-  100%{opacity:1;transform:none;filter:none;}
+  
 }
 
 /* ============ 性能层：GPU 合成 + 渲染隔离（特效全保留） ============ */
@@ -296,14 +278,14 @@ button[data-testid="stBaseButton-primary"]:hover { background: #b6ffd4 !importan
   backface-visibility: hidden;
 }
 .forest-layer .fog, .forest-ground .leaf, .g-dino {
-  will-change: transform, opacity;
+  
   transform: translateZ(0);
   backface-visibility: hidden;
   pointer-events: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  html body::before { animation: none !important; }
-  .forest-ground .leaf { animation: none !important; }
+  html body::before {  }
+  .forest-ground .leaf {  }
 }
 </style>
 """

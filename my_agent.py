@@ -54,15 +54,99 @@ def _load_key_from_env_file() -> str:
     return ""
 
 
+def _load_key_from_session() -> str:
+    """用户在页面上自己填的 Key（最高优先级）；不在 Streamlit 会话里就返回空串。"""
+    try:
+        import streamlit as st
+
+        return str(st.session_state.get("user_api_key", "") or "").strip()
+    except Exception:  # noqa: BLE001 - 脚本单独运行时没有 session_state
+        return ""
+
+
+# 各提供商的默认接入参数：provider 是 agentmold 认识的名字
+PROVIDER_PRESETS: dict[str, dict] = {
+    "deepseek": {
+        "provider": "deepseek",
+        "base_url": "https://api.deepseek.com/v1",
+        "model": "deepseek-chat",
+    },
+    "openai": {
+        "provider": "openai",
+        "base_url": "https://api.openai.com/v1",
+        "model": "gpt-4o-mini",
+    },
+    "anthropic": {
+        "provider": "anthropic",
+        "base_url": "",
+        "model": "claude-3-5-sonnet-latest",
+    },
+    "custom": {
+        "provider": "openai",  # 自定义一律走 OpenAI 兼容协议
+        "base_url": "",
+        "model": "gpt-4o-mini",
+    },
+}
+
+
+def _session_value(name: str) -> str:
+    try:
+        import streamlit as st
+
+        return str(st.session_state.get(name, "") or "").strip()
+    except Exception:  # noqa: BLE001
+        return ""
+
+
+def session_provider() -> str:
+    """当前会话选中的提供商；没登录时退回 deepseek。"""
+    provider = _session_value("user_provider") or "deepseek"
+    return provider if provider in PROVIDER_PRESETS else "deepseek"
+
+
+def resolve_base_url() -> str:
+    """用户自己填的 Base URL 优先，其次用该提供商的默认地址。"""
+    custom = _session_value("user_base_url")
+    if custom:
+        return custom
+    return str(PROVIDER_PRESETS[session_provider()]["base_url"] or "")
+
+
+def resolve_model_name(fallback: str = "") -> str:
+    """会话里填了模型名就用它，否则用提供商默认模型。"""
+    return _session_value("user_model") or fallback or PROVIDER_PRESETS[session_provider()]["model"]
+
+
+def llm_config(fallback_model: str = "") -> dict:
+    """拼出 agentmold 的 llm 配置：有用户 Key 时按 provider 走，没有就走 DeepSeek 默认。"""
+    provider = session_provider()
+    preset = PROVIDER_PRESETS[provider]
+    key = _load_key_from_session()
+    model = resolve_model_name(fallback_model if provider == "deepseek" else "")
+    cfg: dict = {"provider": preset["provider"], "model": model}
+    if key:
+        cfg["api_key"] = key
+    base = resolve_base_url()
+    if base:
+        cfg["base_url"] = base
+    return cfg
+
+
 def resolve_api_key() -> str:
-    """按 secrets → .env → 环境变量 的顺序取密钥；取不到返回空串。"""
-    for loader in (_load_key_from_secrets, _load_key_from_env_file):
+    """按 会话内用户 Key → secrets → .env → 环境变量 的顺序取密钥；取不到返回空串。"""
+    for loader in (_load_key_from_session, _load_key_from_secrets, _load_key_from_env_file):
         try:
             value = loader()
         except Exception:
             value = ""
         if value:
             return value
+    # 非 DeepSeek 提供商：允许直接用该平台自己的环境变量 / 站点系统 Key
+    if session_provider() != "deepseek":
+        for name in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "SYSTEM_API_KEY"):
+            value = os.environ.get(name, "").strip()
+            if value:
+                return value
     return os.environ.get("DEEPSEEK_API_KEY", "").strip()
 
 
@@ -1384,7 +1468,7 @@ def build_agent(
         name=name,
         instructions=instructions,
         tools=tools,
-        llm={"provider": "deepseek", "model": model_name},
+        llm=llm_config(model_name),
     )
 
 
@@ -3217,8 +3301,15 @@ GUIDE_TOTAL = len(GUIDE_STEPS)
 
 
 def has_api_key(model: str | None = None) -> bool:
-    """检查当前模型所需的 API Key 是否存在（不打印、不泄露）。"""
-    key = os.environ.get("DEEPSEEK_API_KEY", "").strip() or resolve_api_key()
+    """检查当前模型所需的 API Key 是否存在（不打印、不泄露）。
+
+    DeepSeek 的 Key 形如 sk-xxxxxxxx（保险起见要求 ≥20 位）；
+    其它提供商 / 本地 Ollama 的 Key 可能很短（例如 ollama），只要 ≥6 位就放行。
+    """
+    key = resolve_api_key()
+    if key:
+        return len(key) >= (20 if session_provider() == "deepseek" else 6)
+    key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
     if not key:
         key = os.environ.get("OPENAI_API_KEY", "").strip()
     return bool(key) and len(key) >= 20
@@ -3227,7 +3318,7 @@ def has_api_key(model: str | None = None) -> bool:
 def api_key_error(model: str | None = None) -> str:
     """给用户看的、不含密钥内容的友好提示（云端 / 本地两种场景）。"""
     return (
-        "还没有配置 DeepSeek API Key，暂时无法调用模型。\n\n"
+        f"还没有配置 {session_provider()} 的 API Key，暂时无法调用模型。\n\n"
         "解决办法（任选一种）：\n"
         "1. 云端（Streamlit Community Cloud）：Settings → Secrets 里填\n"
         '   DEEPSEEK_API_KEY = "sk-你的密钥"，保存后会自动重启生效。\n'
