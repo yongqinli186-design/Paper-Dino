@@ -16,74 +16,6 @@ import streamlit.components.v1 as components
 from pixel_theme import PIXEL_CSS
 
 
-from my_agent import (
-    session_provider,
-    resolve_model_name,
-    build_plot_fix_prompt,
-    execute_python_code,
-    extract_python_blocks,
-    run_red_blue,
-    verify_references,
-    append_figures_to_docx,
-    check_citations,
-    extract_plot_blocks,
-    parse_review_pairs,
-    render_figure_code,
-    save_figure_png,
-    build_auto_level_prompt,
-    build_material_block,
-    download_arxiv_pdf,
-    parse_auto_level,
-    search_arxiv_entries,
-    MODE_LABELS,
-    MODEL,
-    MODELS,
-    DEFAULT_MODEL,
-    OUTPUT_BODY,
-    OUTPUT_BODY_DOCX,
-    OUTPUT_DOCX,
-    OUTPUT_FILE,
-    READING_LEVELS,
-    STYLE_FILE,
-    add_document_to_library,
-    assemble_body,
-    build_agent,
-    build_compress_prompt,
-    build_critic_prompt,
-    api_key_error,
-    build_content_prompt,
-    build_figure_prompt,
-    has_api_key,
-    build_library_context,
-    build_reading_prompt,
-    build_relevance_prompt,
-    build_rewrite_prompt,
-    build_review_prompt,
-    build_section_prompt,
-    build_source_prompt,
-    delete_library_file,
-    docx_bytes,
-    export_body,
-    export_docx,
-    extract_pdf_text,
-    extract_text,
-    inject_style,
-    library_count,
-    list_library,
-    load_style_reference,
-    outline_title,
-    parse_relevance,
-    reading_notes_docx,
-    reading_plain_text,
-    sample_library_snippet,
-    save_body,
-    save_outline,
-    save_style_reference,
-    split_outline_sections,
-    split_reference_section,
-    style_tier,
-)
-
 APP_VERSION = "2.6.0"
 
 # ---------------------------------------------------------------------------
@@ -775,6 +707,7 @@ def get_agent(
     critical: bool = False,
     model: str | None = None,
 ):
+    from my_agent import build_agent, resolve_model_name, DEFAULT_MODEL  # 延迟导入：避免循环依赖
     # 非 DeepSeek 提供商时，model 由通行证里的选择决定（build_agent 内部会忽略 deepseek 型号）
     return build_agent(
         mode, polish=polish, pdf=pdf, lang=lang, critical=critical,
@@ -784,6 +717,7 @@ def get_agent(
 
 def extract_reference_titles(markdown: str) -> list[str]:
     """从文末参考文献里抽纯标题（兼容 [n] 前缀 + APA 的 `作者 (年). 标题.`）。"""
+    from my_agent import split_reference_section
     if not markdown:
         return []
     try:
@@ -824,6 +758,7 @@ def show_loader(text: str) -> None:
 @st.cache_data(show_spinner=False, max_entries=64)
 def to_docx_bytes(markdown: str) -> bytes:
     """Markdown → Word（文末自动补 APA 参考文献）。同样的文本只生成一次。"""
+    from my_agent import docx_bytes
     return docx_bytes(markdown)
 
 
@@ -841,6 +776,7 @@ def docx_download(
     gate_citations=True 时先校对正文 [n] 与文末参考文献条数，不匹配只报错、不给下载按钮；
     with_figures=True 时把「📊 生成图表」存下来的 PNG 按顺序附到文末。
     """
+    from my_agent import append_figures_to_docx, check_citations
     if gate_citations:
         info = check_citations(content)
         if not info["cites"] and not info["ref_count"]:
